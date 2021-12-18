@@ -6,31 +6,6 @@ const sequelize = new Sequelize(dbConnectionString);
 
 import {DB as DB} from "./db/db.js";
 
-//TODO: move to db.json - begin
-/*
-import { Word as Word } from "./models/word.js";
-import { Inventory as Inventory } from "./models/inventory.js";
-import { BasketLine as BasketLine } from "./models/basketLine.js";
-
-const models = {
-  WordModel: Word.init(sequelize, Sequelize),
-  InventoryModel: Inventory.init(sequelize, Sequelize),
-  BasketLineModel: BasketLine.init(sequelize, Sequelize)
-};
-
-Object.values(models)
-  .filter(model => typeof model.associate === "function")
-  .forEach(model => model.associate(models));
-
-const db = {
-  ...models,
-  sequelize
-};
-
-export default db;
-*/
-//TODO: move to db.json - end
-
 sequelize.authenticate().then(() => {
   console.log('Connection has been established successfully.');
 })
@@ -56,6 +31,13 @@ catch(err) {
   process.exitCode = 1;
   process.exit();
 }
+
+app.get('/', async (req, res) => {
+  try {
+     res.send(`Example application here`);
+   } catch(error) {
+     console.error(error);
+   }});
 
 app.get('/words', async (req, res) => {
   try {
@@ -84,41 +66,38 @@ app.get('/inventory', async (req, res) => {
   }
 });
 
+app.post('/inventory', async (req, res) => {
+  try {
+    const newItem = Inventory.create(req.body);
+    await newItem.save();
+    res.json({ inventory: newItem })
+  } catch(error) {
+    console.error(error);
+  }});
+
+app.get('/api/health', async (req, res) => {
+  try {
+    await sequelize.query("SELECT 1+1 AS health_check_result");
+    res.sendStatus(200);
+  } catch(error) {
+    console.error(error);
+    res.sendStatus(500);
+  }
+});
+
+app.get('/api/warmup', async (req, res) => {
+  try {
+    await db.InventoryModel.findAll();
+    await db.WordModel.findAll();
+    await db.BasketLineModel.findAll();
+    res.sendStatus(200);
+  } catch(error) {
+    console.error(error);
+    res.sendStatus(500);
+  }
+});
 
 /*
-const Sequelize = require('sequelize');
-const sequelize = new Sequelize(`postgres://${dbLogin}%40${dbServer}:${dbPassword}@${dbServer}:${dbServerPort}/${dbName}`);
-
-sequelize.authenticate().then(() => {
-    console.log('Connection has been established successfully.');
-  })
-  .catch(err => {
-    console.error('Unable to connect to the database:', err);
-  });
-
-const Inventory = sequelize.define('inventory', {
-    id: { type: Sequelize.INTEGER, allowNull: false, primaryKey: true },
-    name: { type: Sequelize.STRING, allowNull: false },
-    quantity: { type: Sequelize.INTEGER },
-    date: { type: Sequelize.DATEONLY, defaultValue: Sequelize.NOW }
-  },  {
-    freezeTableName: true,
-    timestamps: false
-  });
-
-const express = require('express');
-const app = express();
-
-app.use(express.json());
-app.listen(appPort, () => console.log(`Sample app is listening on port ${appPort}!`));
-
-app.get('/', async (req, res) => {
-  try {
-     res.send(`Example application here`);
-   } catch(error) {
-     console.error(error);
-   }});
-
 app.post('/inventory', async (req, res) => {
   try {
     const newItem = new Inventory(req.body);
@@ -127,7 +106,6 @@ app.post('/inventory', async (req, res) => {
   } catch(error) {
     console.error(error);
   }});
-
 
 app.get('/inventory/:id', async (req, res) => {
    const id = req.params.id
