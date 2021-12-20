@@ -32,7 +32,8 @@ export class BasketLine extends Sequelize.Model {
                 tableName: "basket_line",
                 freezeTableName: true,
                 timestamps: true
-            });
+            }
+            );
     }
 }
 

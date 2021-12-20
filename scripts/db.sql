@@ -34,3 +34,12 @@ INSERT INTO word ("term", "explanation", "formClass") VALUES ('omophagy','the ea
 INSERT INTO word ("term", "explanation", "formClass") VALUES ('rawky','foggy, damp, and cold','adjective') ON CONFLICT DO NOTHING;
 INSERT INTO word ("term", "explanation", "formClass") VALUES ('serendipity','happy and unexpected discovery','noun') ON CONFLICT DO NOTHING;
 INSERT INTO word ("term", "explanation", "formClass") VALUES ('gobbledygook','text riddled with official jargon and overly complicated sentence structures','noun') ON CONFLICT DO NOTHING;
+
+INSERT INTO inventory ("wordId", "qty") VALUES (1,100) ON CONFLICT DO NOTHING;
+INSERT INTO inventory ("wordId", "qty") VALUES (2,200) ON CONFLICT DO NOTHING;
+INSERT INTO inventory ("wordId", "qty") VALUES (3,300) ON CONFLICT DO NOTHING;
+INSERT INTO inventory ("wordId", "qty") VALUES (4,400) ON CONFLICT DO NOTHING;
+INSERT INTO inventory ("wordId", "qty") VALUES (5,500) ON CONFLICT DO NOTHING;
+INSERT INTO inventory ("wordId", "qty") VALUES (6,600) ON CONFLICT DO NOTHING;
+INSERT INTO inventory ("wordId", "qty") VALUES (7,700) ON CONFLICT DO NOTHING;
+INSERT INTO inventory ("wordId", "qty") VALUES (8,800) ON CONFLICT DO NOTHING;

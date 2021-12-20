@@ -32,14 +32,24 @@ catch(err) {
   process.exit();
 }
 
+import swaggerUi from "swagger-ui-express";
+import swaggerDocument from "./swagger.js";
+
+var options = {
+  explorer: true
+};
+
+app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerDocument, options));
+
 app.get('/', async (req, res) => {
   try {
-     res.send(`Example application here`);
+     res.redirect("/swagger");
    } catch(error) {
      console.error(error);
+     res.send("Simple Node.js API - proceed to /swagger for more doccumentation.")
    }});
 
-app.get('/words', async (req, res) => {
+app.get('/api/words', async (req, res) => {
   try {
     const wordCollection = await db.WordModel.findAll();
     res.json({ words: wordCollection })
@@ -48,25 +58,37 @@ app.get('/words', async (req, res) => {
     }
 });
 
-app.get('/basket', async (req, res) => {
+app.get('/api/basket', async (req, res) => {
   try {
-    const basketLineCollection = await db.BasketLineModel.findAll();
+    const basketLineCollection = await db.BasketLineModel.findAll({
+      include:[
+               {
+                   model: db.WordModel,
+                   as: "word"
+               }]
+              });
     res.json({ basket: basketLineCollection })
   } catch(error) {
     console.error(error);
   }
 });
 
-app.get('/inventory', async (req, res) => {
+app.get('/api/inventory', async (req, res) => {
   try {
-    const inventoryCollection = await db.InventoryModel.findAll();
+    const inventoryCollection = await db.InventoryModel.findAll({
+      include:[
+               {
+                   model: db.WordModel,
+                   as: "word"
+               }]
+  });
     res.json({ inventory: inventoryCollection })
   } catch(error) {
     console.error(error);
   }
 });
 
-app.post('/inventory', async (req, res) => {
+app.post('/api/inventory', async (req, res) => {
   try {
     const newItem = Inventory.create(req.body);
     await newItem.save();
@@ -75,7 +97,7 @@ app.post('/inventory', async (req, res) => {
     console.error(error);
   }});
 
-app.get('/api/health', async (req, res) => {
+app.get('/health/ping', async (req, res) => {
   try {
     await sequelize.query("SELECT 1+1 AS health_check_result");
     res.sendStatus(200);
@@ -85,7 +107,7 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-app.get('/api/warmup', async (req, res) => {
+app.get('/health/warmup', async (req, res) => {
   try {
     await db.InventoryModel.findAll();
     await db.WordModel.findAll();
