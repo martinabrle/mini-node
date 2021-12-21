@@ -20,49 +20,238 @@ export default {
     "paths": {
       "/api/words": {
         "get": {
-          "tags": ["Words"],
-          "summary": "Get all words in the catalogue",
+          "tags": ["words"],
+          "operationId": "Words_GET",
+          "summary": "Get words in the catalogue",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "query",
+              "type": "integer",
+              "description": "Numeric Id of the word",
+              "required": false
+            },
+            {
+              "name": "term",
+              "in": "query",
+              "type": "string",
+              "description": "Word term",
+              "required": false
+            }
+          ],
           "responses": {
             "200": {
-              "description": "OK",
+              "description": "Success",
               "schema": {
-                "$ref": "#/definitions/GetWords"
+                "$ref": "#/definitions/GetWordsReturnEntity"
               }
             }
           }
+        },
+        "post": {
+          "tags": [ "words" ],
+          "operationId": "Words_POST",
+          "summary": "Add a new word into the catalogue",
+          "parameters": [
+            {
+              "name": "word",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/AddWordEntity"
+              },
+              "required": true
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "schema": {
+                "$ref": "#/definitions/AddWordReturnEntity"
+              }
+            }
+          },
+        },
+        "patch": {
+          "tags": [ "words" ],
+          "operationId": "Words_PATCH",
+          "summary": "Updates an existing word in the catalogue",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "type": "integer",
+              "description": "Numeric Id of the word",
+              "required": true
+            },
+            {
+              "name": "word",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/UpdateWordEntity"
+              },
+              "required": true
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "schema": {
+                "$ref": "#/definitions/UpdateWordReturnEntity"
+              }
+            }
+          },
+        },
+        "delete": {
+          "tags": [ "words" ],
+          "operationId": "Words_DELETE",
+          "summary": "Removes an existing word from the catalogue",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "path",
+              "type": "integer",
+              "description": "Numeric Id of the word to delete",
+              "required": true
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success"
+            }
+          },
         }
       },
       "/api/inventory": {
         "get": {
-          "tags": ["Inventory"],
-          "summary": "Get the whole inventory",
+          "tags": ["inventory"],
+          "operationId": "Inventory_GET",
+          "summary": "Get inventory information",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "query",
+              "type": "integer",
+              "description": "Numeric Id of the inventory entry to retrieve",
+              "required": false
+            },
+            {
+              "name": "wordId",
+              "in": "query",
+              "type": "integer",
+              "description": "Numeric Id of the word to to retrieve inventory information",
+              "required": false
+            },
+          ],
           "responses": {
             "200": {
-              "description": "OK",
+              "description": "Success",
               "schema": {
-                "$ref": "#/definitions/GetInventoryLines"
+                "$ref": "#/definitions/GetInventoryLinesEntity"
               }
             }
           }
-        }
+        },
+        "patch": {
+          "tags": [ "inventory" ],
+          "operationId": "Inventory_PATCH",
+          "summary": "Adds qty to inventory on hand - either id or word id must be specified as a parameter",
+          "parameters": [
+            {
+              "name": "id",
+              "in": "query",
+              "type": "integer",
+              "description": "Numeric Id of the inventory entry to add qty to",
+              "required": false
+            },
+            {
+              "name": "wordId",
+              "in": "query",
+              "type": "integer",
+              "description": "Numeric Id of the word to filter to add qty to in inventory",
+              "required": false
+            },
+            {
+              "name": "qty",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/AddInventoryEntity"
+              },
+              "required": true
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "schema": {
+                "$ref": "#/definitions/AddInventoryReturnEntity"
+              }
+            }
+          },
+        },
       },
       "/api/basket": {
         "get": {
-          "tags": ["Basket items"],
+          "tags": ["basket"],
           "summary": "Get all user's words in the basket",
+          "parameters": [
+            {
+              "name": "userId",
+              "in": "path",
+              "type": "string",
+              "description": "Identification of the user",
+              "required": true
+            }
+          ],
           "responses": {
             "200": {
               "description": "OK",
               "schema": {
-                "$ref": "#/definitions/GetBasketLines"
+                "$ref": "#/definitions/GetBasketReturnEntity"
               }
             }
           }
-        }
+        },
+        "patch": {
+          "tags": [ "basket" ],
+          "operationId": "Basket_PATCH",
+          "summary": "Modifies qty of an item in the basket",
+          "parameters": [
+            {
+              "name": "userId",
+              "in": "path",
+              "type": "string",
+              "description": "Identification of the user",
+              "required": true
+            },
+            {
+              "name": "wordId",
+              "in": "path",
+              "type": "integer",
+              "description": "Numeric Id of the word in the basket, to modify the quantity of",
+              "required": true
+            },
+            {
+              "name": "qty",
+              "in": "body",
+              "schema": {
+                "$ref": "#/definitions/UpdateBasketEntity"
+              },
+              "required": true
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "schema": {
+                "$ref": "#/definitions/UpdateBasketReturnEntity"
+              }
+            }
+          },
+        },
       }
     },
     "definitions": {
-      "Word": {
+      "WordEntity": {
         "required": ["term", "explanation", "formClass"],
         "properties": {
           "id": {
@@ -86,13 +275,13 @@ export default {
           }
         }
       },
-      "Words": {
+      "WordsEntity": {
         "type": "array",
         "items": {
-          "$ref": "#/definitions/Word"
+          "$ref": "#/definitions/WordEntity"
         }
       },
-      "BasketLine": {
+      "BasketLineEntity": {
         "required": ["wordId"],
         "properties": {
           "id": {
@@ -105,7 +294,7 @@ export default {
           "word": {
             "type": "object",
             "items": {
-              "$ref": "#/definitions/Word"
+              "$ref": "#/definitions/WordEntity"
             }
           },
           "qty": {
@@ -121,13 +310,13 @@ export default {
           }
         }
       },
-      "BasketLines": {
+      "BasketLinesEntity": {
         "type": "array",
         "items": {
-          "$ref": "#/definitions/BasketLine"
+          "$ref": "#/definitions/BasketLineEntity"
         }
       },
-      "Inventory": {
+      "InventoryLineEntity": {
         "required": ["wordId"],
         "properties": {
           "id": {
@@ -140,7 +329,7 @@ export default {
           "word": {
             "type": "object",
             "items": {
-              "$ref": "#/definitions/Word"
+              "$ref": "#/definitions/WordEntity"
             }
           },
           "qty": {
@@ -156,36 +345,109 @@ export default {
           }
         }
       },
-      "InventoryLines": {
+      "InventoryLinesEntity": {
         "type": "array",
         "items": {
-          "$ref": "#/definitions/Inventory"
+          "$ref": "#/definitions/InventoryLineEntity"
         }
       },
-      "GetWords": {
+      "GetWordsReturnEntity": {
         "properties": {
           "words": {
             "type": "object",
-            "$ref": "#/definitions/Words"
+            "$ref": "#/definitions/WordsEntity"
           }
         }
       },
-      "GetBasketLines": {
-        "properties": {
-          "basket": {
-            "type": "object",
-            "$ref": "#/definitions/BasketLines"
-          }
-        }
-      },
-      "GetInventoryLines": {
+      "GetInventoryLinesEntity": {
         "properties": {
           "inventory": {
             "type": "object",
-            "$ref": "#/definitions/InventoryLines"
+            "$ref": "#/definitions/InventoryLinesEntity"
           }
         }
-      }
+      },
+      "GetBasketReturnEntity": {
+        "properties": {
+          "basket": {
+            "type": "object",
+            "$ref": "#/definitions/BasketLinesEntity"
+          }
+        }
+      },
+      "AddWordEntity": {
+        "required": ["term", "explanation", "formClass"],
+        "properties": {
+          "term": {
+            "type": "string"
+          },
+          "explanation": {
+            "type": "string"
+          },
+          "formClass": {
+            "type": "string"
+          },
+        }
+      },
+      "AddWordReturnEntity": {
+        "properties": {
+          "word": {
+            "type": "object",
+            "$ref": "#/definitions/WordEntity"
+          }
+        }
+      },
+      "UpdateWordEntity": {
+        "required": ["explanation", "formClass"],
+        "properties": {
+          "explanation": {
+            "type": "string"
+          },
+          "formClass": {
+            "type": "string"
+          },
+        }
+      },
+      "UpdateWordReturnEntity": {
+        "properties": {
+          "word": {
+            "type": "object",
+            "$ref": "#/definitions/WordEntity"
+          }
+        }
+      },
+      "AddInventoryEntity": {
+        "required": ["qty"],
+        "properties": {
+          "qty": {
+            "type": "number"
+          }
+        }
+      },
+      "AddInventoryReturnEntity": {
+        "properties": {
+          "inventory": {
+            "type": "object",
+            "$ref": "#/definitions/InventoryLineEntity"
+          }
+        }
+      },
+      "UpdateBasketEntity": {
+        "required": ["qty"],
+        "properties": {
+          "qty": {
+            "type": "number"
+          }
+        }
+      },
+      "UpdateBasketReturnEntity": {
+        "properties": {
+          "inventory": {
+            "type": "object",
+            "$ref": "#/definitions/BasketLineEntity"
+          }
+        }
+      },
     },
     "schemes": ["http", "https"],
     "consumes": ["application/json"],
