@@ -1,4 +1,4 @@
-name: mini-node-app-validation
+name: api-validation
 
 on:
   workflow_dispatch:
