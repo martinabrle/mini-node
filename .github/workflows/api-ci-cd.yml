@@ -1,0 +1,158 @@
+name: api-ci-cd
+
+on:
+  #push:
+  #  branches:
+  #    - main
+  #  paths:
+  #    - 'express-postgresql-app/**'  
+  workflow_dispatch:
+    
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./api
+    outputs:
+      RELEASE_VERSION: ${{ steps.get_version_info.outputs.RELEASE_VERSION }}
+      RELEASE_NAME: ${{ steps.get_version_info.outputs.RELEASE_NAME }}    
+      RELEASE_FILE_NAME: ${{ steps.get_version_info.outputs.RELEASE_FILE_NAME }}    
+    env:
+      RELEASE_VERSION: "0.0.0"
+      RELEASE_NAME: "mini-node-api.zip"
+      RELEASE_FILE_NAME: "mini-node-api"
+    steps:
+      - uses: actions/checkout@v2
+        
+      - name: Validate deployment template(s)
+        run: |
+          az bicep build --file ../scripts/deployment-rg.bicep
+          az bicep build --file ../scripts/deployment-uat.bicep
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+          registry-url: https://npm.pkg.github.com
+          
+      - name: Restore all project dependencies
+        run: npm install
+      
+      - name: Generate a unique package version
+        id: get_version_info
+        run: |
+          declare releaseOrigVersion=""
+          declare releaseVersion=""
+          declare releaseName=""
+          declare releaseFileName=""
+          
+          releaseOrigVersion=$(cat ./package.json | jq '.version')
+          releaseOrigVersion="${releaseOrigVersion%\"}"
+          releaseOrigVersion="${releaseOrigVersion#\"}"
+          releaseVersion="${releaseOrigVersion}.${{github.run_number}}"
+          
+          cat ./package.json | jq ". |= . + { \"version\": \"${releaseVersion}\" }" > ./package.new.json
+          mv ./package.json ./api/package.old.json
+          mv ./package.new.json ./api/package.json
+          rm ./package.old.json
+          
+          releaseName="mini-node-api-${releaseVersion}"
+          releaseFileName="mini-node-api-${releaseVersion}.zip"
+          
+          echo "RELEASE_VERSION=$releaseVersion" >> $GITHUB_ENV
+          echo "RELEASE_NAME=$releaseName" >> $GITHUB_ENV
+          echo "RELEASE_FILE_NAME=$releaseFileName" >> $GITHUB_ENV
+
+          echo "::set-output name=RELEASE_VERSION::$releaseVersion"
+          echo "::set-output name=RELEASE_NAME::$releaseName"
+          echo "::set-output name=RELEASE_FILE_NAME::$releaseFileName"
+          
+      - name: Build and validate
+        run: npm run build
+      
+      - name: Run unit tests
+        run: npm run test
+      
+      - name: Remove test artifacts
+        run: |
+          rm -rf node_modules
+          npm install --production
+      
+      - name: Copy scripts to API to have it all bundled
+        run: |
+          cp -rf ../scripts ./
+      
+      - name: Create an application archive
+        run: |
+         zip -r -q -m "${{ env.RELEASE_FILE_NAME }}" .
+      
+      - name: 'Upload build artifact'
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.RELEASE_NAME }}
+          path: ./api/${{ env.RELEASE_FILE_NAME }}
+          retention-days: 5
+          
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    
+      - name: Download build artefacts
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{needs.build.outputs.RELEASE_NAME}}
+      
+      - name: Unpack deployment
+        run: unzip "./${{needs.build.outputs.RELEASE_FILE_NAME}}"
+      
+      - name: Check downloaded files
+        run: |
+          pwd
+          ls -la
+          pwd
+          ls -la ./scripts/
+      
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_UAT_CREDENTIALS }}
+
+      - name: Set default Azure subscription
+        run: az account set -s ${{ secrets.AZURE_UAT_SUBSCRIPTION_ID }}
+      
+      - name: Create Azure resource group
+        run: az deployment sub create --location ${{ secrets.AZURE_UAT_LOCATION }} --template-file ./scripts/deployment-rg.bicep --parameters name=${{ secrets.AZURE_UAT_RESOURCE_GROUP }}
+
+      - name: Deploy Azure resources
+        run: az deployment group create --resource-group ${{ secrets.AZURE_UAT_RESOURCE_GROUP }} --template-file ./scripts/deployment-uat.bicep --parameters dbServerDomain=postgres.database.azure.com dbServerName=${{ secrets.AZURE_UAT_DB_SERVER_NAME }} dbServerPort=${{ secrets.AZURE_UAT_DB_SERVER_PORT }} dbName=${{ secrets.AZURE_UAT_DB_NAME }} dbServerLogin=${{ secrets.AZURE_UAT_DB_SERVER_LOGIN }} dbServerPassword=${{ secrets.AZURE_UAT_DB_SERVER_LOGIN_PASSWORD }} appServicePlanName=${{ secrets.AZURE_UAT_APP_SERVICE_PLAN_NAME }} appServiceName=${{ secrets.AZURE_UAT_APP_SERVICE_NAME }} appServicePort=${{ secrets.AZURE_UAT_APP_SERVICE_PORT }}
+
+      - name: Create DB if it does not exist
+        run: |
+          export PGPASSWORD=${{ secrets.AZURE_UAT_DB_SERVER_LOGIN_PASSWORD }}
+          psql --host=${{ secrets.AZURE_UAT_DB_SERVER_NAME }}.postgres.database.azure.com --port=${{ secrets.AZURE_UAT_DB_SERVER_PORT }} --username=${{ secrets.AZURE_UAT_DB_SERVER_LOGIN }}@${{ secrets.AZURE_UAT_DB_SERVER_NAME }} --no-password --dbname=postgres -tc "SELECT 1 FROM pg_database WHERE datname = '${{ secrets.AZURE_UAT_DB_NAME }}'" | grep -q 1 || psql --host=${{ secrets.AZURE_UAT_DB_SERVER_NAME }}.postgres.database.azure.com --port=${{ secrets.AZURE_UAT_DB_SERVER_PORT }} --username=${{ secrets.AZURE_UAT_DB_SERVER_LOGIN }}@${{ secrets.AZURE_UAT_DB_SERVER_NAME }} --no-password  --dbname=postgres -c "CREATE DATABASE ${{ secrets.AZURE_UAT_DB_NAME }};"
+        
+      - name: Run DB scripts
+        run: |
+          export PGPASSWORD=${{ secrets.AZURE_UAT_DB_SERVER_LOGIN_PASSWORD }}
+          psql --host=${{ secrets.AZURE_UAT_DB_SERVER_NAME }}.postgres.database.azure.com --port=${{ secrets.AZURE_UAT_DB_SERVER_PORT }} --username=${{ secrets.AZURE_UAT_DB_SERVER_LOGIN }}@${{ secrets.AZURE_UAT_DB_SERVER_NAME }} --no-password --dbname=${{ secrets.AZURE_UAT_DB_NAME }} --file=./scripts/db.sql
+          
+      - name: Deploy to AppService
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: "${{ secrets.AZURE_UAT_APP_SERVICE_NAME }}"
+          package: "${{ needs.build.outputs.RELEASE_FILE_NAME }}"
+      
+      - name: Run integration test(s)
+        run: |
+          echo "Run integration tests...."
+      
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ needs.build.outputs.RELEASE_FILE_NAME }}
+          tag_name: ${{ needs.build.outputs.RELEASE_NAME }}
+          files: "./express-postgresql-app/${{ needs.build.outputs.RELEASE_FILE_NAME }}"
+          token: ${{ secrets.PAT_TOKEN }} # To trigger other workflows
+          
