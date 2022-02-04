@@ -7,5 +7,5 @@ describe('Math checker', () => {
         ).toEqual(
           2+3
         );
-    })
-  })
+    });
+  });

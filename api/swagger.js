@@ -452,4 +452,4 @@ export default {
     "schemes": ["http", "https"],
     "consumes": ["application/json"],
     "produces": ["application/json"]
-  }
+  } // eslint-disable-line semi

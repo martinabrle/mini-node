@@ -39,7 +39,6 @@ try {
 import swaggerUi from "swagger-ui-express";
 import swaggerDocument from "./swagger.js";
 import { Word } from "./models/word.js";
-import { Inventory } from "./models/inventory.js";
 
 var options = {
   explorer: true,
@@ -129,6 +128,7 @@ app.delete("/api/words/:id", async (req, res) => {
   }
 });
 
+// eslint-disable-next-line no-unused-vars
 app.patch("/api/words/:id?", async (req, res, next) => {
   const wordIdFilter = req.params.id;
   if (wordIdFilter === undefined || wordIdFilter.length === "") {
@@ -291,6 +291,10 @@ app.patch("/api/inventory", async (req, res) => {
           type: QueryTypes.UPDATE,
         }
       );
+      if (metadata === undefined || results === undefined) {
+        //should never happen - but makes the linter happy
+        throw "Update inventory statement returned an unexpected value";
+      }
       if (metadata === 0) {
         await db.InventoryModel.create({ wordId: wordIdFilter, qty: qtyDelta });
       }
@@ -313,6 +317,10 @@ app.patch("/api/inventory", async (req, res) => {
           type: QueryTypes.DDL,
         }
       );
+      if (metadata === undefined || results === undefined || metadata === 0) {
+        //should never happen - but makes the linter happy
+        throw "Update inventory statement returned an unexpected value";
+      }
       inventoryCollection = await db.InventoryModel.findAll({
         where: {
           id: idFilter,

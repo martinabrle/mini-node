@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize";
-import { Word} from "./word.js"
+import { Word } from "./word.js";
 
 export class Inventory extends Sequelize.Model {
     static init(sequelize, DataTypes) {

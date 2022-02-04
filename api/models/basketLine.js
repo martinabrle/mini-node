@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize";
-import { Word} from "./word.js"
+import { Word } from "./word.js";
 
 export class BasketLine extends Sequelize.Model {
     static init(sequelize, DataTypes) {
@@ -32,8 +32,6 @@ export class BasketLine extends Sequelize.Model {
                 tableName: "basket_line",
                 freezeTableName: true,
                 timestamps: true
-            }
-            );
+            });
     }
 }
-
