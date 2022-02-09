@@ -1,6 +1,10 @@
 #/bin/bash
 
-#For packages to work with this script, they need the name format of "long-package-name-vX.YY.ZZZ[.zip|.tar|...]", where X.YY.ZZZ is a semver
+# Usage: get_last_version.sh -o OWNER/ORG -r REPO -p PACKAGE_NAME"
+#        For packages to work with this script, they need the name format
+#        of "long-package-name-vX.YY.ZZZ[.zip|.tar|...]", where X.YY.ZZZ is
+#        a semver
+
 PACKAGE_NAME=""
 REPO=""
 OWNER=""
@@ -12,8 +16,10 @@ do
         r) REPO=${OPTARG};;
         p) PACKAGE_NAME=${OPTARG};;
         \?) echo "Invalid option: -"$OPTARG"" >&2
+            echo "Usage: get_last_version.sh -o OWNER/ORG -r REPO -p PACKAGE_NAME" >&2
             exit 1;;
         : ) echo "Option -"$OPTARG" requires an argument." >&2
+            echo "Usage: get_last_version.sh -o OWNER/ORG -r REPO -p PACKAGE_NAME" >&2
             exit 1;;
     esac
 done
