@@ -8,14 +8,17 @@ param dbServerLogin string
 @secure()
 param dbServerPassword string
 
-param appServicePlanName string
-param appServiceName string
-param appServicePort string
+param apiServiceName string
+param apiServicePort string
 
+param webServiceName string
+param webServicePort string
+
+param location string = resourceGroup().location
 
 resource postgreSQLServer 'Microsoft.DBforPostgreSQL/servers@2017-12-01' = {
   name: dbServerName
-  location: resourceGroup().location
+  location: location
   tags: {
     workload: 'test'
     costCentre: 'development'
@@ -66,9 +69,9 @@ resource postgreSQLServer_ClientIPAddress 'Microsoft.DBforPostgreSQL/servers/fir
   }
 }
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2021-02-01' = {
-  name: appServicePlanName
-  location: resourceGroup().location
+resource apiServicePlan 'Microsoft.Web/serverfarms@2021-02-01' = {
+  name: '${apiServiceName}Plan'
+  location: location
   dependsOn: [
     postgreSQLServer
   ]
@@ -81,27 +84,24 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2021-02-01' = {
   kind: 'linux'
 }
 
-resource appService 'Microsoft.Web/sites@2021-02-01' = {
-  name: appServiceName
-  dependsOn: [
-    appServicePlan
-  ]
-  location: resourceGroup().location
+resource apiService 'Microsoft.Web/sites@2021-02-01' = {
+  name: apiServiceName
+  location: location
   properties: {
-    serverFarmId: appServicePlan.id
+    serverFarmId: apiServicePlan.id
     siteConfig: {
       linuxFxVersion: 'node|16-lts'
       scmType: 'None' 
     }
   }
-  resource appServiceSettingPARMS 'config@2021-02-01' = {
+  resource apiServicePARMS 'config@2021-02-01' = {
     name: 'web'
     kind: 'string'
     properties: {
       appSettings: [
         {
           name: 'PORT'
-          value: appServicePort
+          value: apiServicePort
         }
         {
           name: 'DB_SERVER'
@@ -131,55 +131,51 @@ resource appService 'Microsoft.Web/sites@2021-02-01' = {
     }
   }
 }
-  /*
-  resource appServiceSettingSCM 'config@2021-02-01' = {
-    name: 'appsettings'
+
+resource webServicePlan 'Microsoft.Web/serverfarms@2021-02-01' = {
+  name: '${webServiceName}Plan'
+  location: location
+  dependsOn: [
+    apiService
+  ]
+  properties: {
+    reserved: true
+  }
+  sku: {
+    name: 'F1'
+  }
+  kind: 'linux'
+}
+
+resource webService 'Microsoft.Web/sites@2021-02-01' = {
+  name: webServiceName
+  location: location
+  properties: {
+    serverFarmId: webServicePlan.id
+    siteConfig: {
+      linuxFxVersion: 'node|16-lts'
+      scmType: 'None' 
+    }
+  }
+  resource webServicePARMS 'config@2021-02-01' = {
+    name: 'web'
     kind: 'string'
     properties: {
-        SCM_DO_BUILD_DURING_DEPLOYMENT: 'false'
+      appSettings: [
+        {
+          name: 'PORT'
+          value: webServicePort
+        }
+        {
+          name: 'API_SERVER'
+          value: apiService.name
+        }
+        {
+          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
+          value: 'false'
+        }
+      ]
     }
   }
 }
-resource appServiceSettingSCM 'Microsoft.Web/sites/config@2021-02-01' = {
-  parent: appService
-  name: 'appsettings'
-  kind: 'string'
-  properties: {
-      SCM_DO_BUILD_DURING_DEPLOYMENT: 'false'
-  }
-}
-*/
-/*
-resource appServiceSettingPORT 'Microsoft.Web/sites/config@2021-02-01' = {
-  parent: appService
-  name: 'web'
-  kind: 'string'
-  properties: {
-    appSettings: [
-      {
-        name: 'PORT'
-        value: appServicePort
-      }
-      {
-        name: 'DB_SERVER'
-        value: '${dbServerName}.${dbServerDomain}'
-      }
-      {
-        name: 'DB_SERVER_PORT'
-        value: dbServerPort
-      }
-      {
-        name: 'DB_NAME'
-        value: dbName
-      }
-      {
-        name: 'DB_LOGIN'
-        value: dbServerLogin
-      }
-      {
-        name: 'DB_PASSWORD'
-        value: dbServerPassword
-      }
-    ]
-  }
-}*/
+
