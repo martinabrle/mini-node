@@ -142,7 +142,7 @@ resource webServicePlan 'Microsoft.Web/serverfarms@2021-02-01' = {
     reserved: true
   }
   sku: {
-    name: 'F1'
+    name: 'B1'
   }
   kind: 'linux'
 }
