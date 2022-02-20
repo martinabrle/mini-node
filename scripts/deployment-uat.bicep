@@ -133,7 +133,7 @@ resource apiService 'Microsoft.Web/sites@2021-02-01' = {
 }
 
 resource webServicePlan 'Microsoft.Web/serverfarms@2021-02-01' = {
-  name: '${webServiceName}Plan'
+  name: '${webServiceName}-plan'
   location: location
   dependsOn: [
     apiService
