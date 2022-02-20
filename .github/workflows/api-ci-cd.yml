@@ -5,7 +5,7 @@ on:
   #  branches:
   #    - main
   #  paths:
-  #    - 'express-postgresql-app/**'  
+  #    - 'api/**'  
   workflow_dispatch:
     
 jobs:
@@ -39,9 +39,9 @@ jobs:
       - name: Generate a unique package version
         id: version
         run: |
+          VERSION=""        
           VERSION_REPO=$(../scripts/ver/get_version_repo.sh -o martinabrle -r mini-node -p mini-node-api)
           VERSION_NODE=$(../scripts/ver/get_version_node.sh -f ./package.json)
-          VERSION=""
 
           RETVAL_VER_COMP=$(../scripts/ver/version_compare.sh "${VERSION_REPO}" "${VERSION_NODE}")
 
@@ -84,7 +84,7 @@ jobs:
           name: ${{ steps.version.outputs.RELEASE_NAME }}
           path: ./api/${{ steps.version.outputs.RELEASE_FILE_NAME }}
           retention-days: 5
-          
+      
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -164,4 +164,3 @@ jobs:
           tag_name: ${{ needs.build.outputs.RELEASE_NAME }}
           files: "./express-postgresql-app/${{ needs.build.outputs.RELEASE_FILE_NAME }}"
           token: ${{ secrets.PAT_TOKEN }} # To trigger other workflows
-          
