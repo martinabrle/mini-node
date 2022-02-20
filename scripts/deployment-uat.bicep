@@ -70,7 +70,7 @@ resource postgreSQLServer_ClientIPAddress 'Microsoft.DBforPostgreSQL/servers/fir
 }
 
 resource apiServicePlan 'Microsoft.Web/serverfarms@2021-02-01' = {
-  name: '${apiServiceName}Plan'
+  name: '${apiServiceName}-plan'
   location: location
   dependsOn: [
     postgreSQLServer
@@ -79,7 +79,7 @@ resource apiServicePlan 'Microsoft.Web/serverfarms@2021-02-01' = {
     reserved: true
   }
   sku: {
-    name: 'F1'
+    name:'B1'
   }
   kind: 'linux'
 }

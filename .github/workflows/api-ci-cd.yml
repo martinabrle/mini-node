@@ -126,7 +126,6 @@ jobs:
              az deployment sub create \
               --location ${{ secrets.AZURE_UAT_LOCATION }} \
               --template-file ./scripts/deployment-rg.bicep \
-              --name "${{ secrets.AZURE_UAT_LOCATION }}-deployment" \
               --parameters name=${{ secrets.AZURE_UAT_RESOURCE_GROUP }} location=${{ secrets.AZURE_UAT_LOCATION }}
 
       - name: Deploy Azure resources
@@ -134,7 +133,6 @@ jobs:
              az deployment group create \
               --resource-group ${{ secrets.AZURE_UAT_RESOURCE_GROUP }}  \
               --template-file ./scripts/deployment-uat.bicep  \
-              --name "${{ secrets.AZURE_UAT_LOCATION }}-deployment" \
               --parameters \
                     dbServerDomain=postgres.database.azure.com  \
                     dbServerName=${{ secrets.AZURE_UAT_DB_SERVER_NAME }}  \
