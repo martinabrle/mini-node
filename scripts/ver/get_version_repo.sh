@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 # Usage: get_last_version.sh -o OWNER/ORG -r REPO -p PACKAGE_NAME"
 #        For packages to work with this script, they need the name format
@@ -12,17 +12,31 @@ OWNER=""
 while getopts o:r:p: flag
 do
     case "${flag}" in
-        o) OWNER=${OPTARG};;
-        r) REPO=${OPTARG};;
-        p) PACKAGE_NAME=${OPTARG};;
-        \?) echo "Invalid option: -"$OPTARG"" >&2
+        o)
+            OWNER=${OPTARG}
+            ;;
+        r)
+            REPO=${OPTARG}
+            ;;
+        p)
+            PACKAGE_NAME=${OPTARG}
+            ;;
+        \?)
+            echo "Error: Invalid syntax" >&2
             echo "Usage: get_last_version.sh -o OWNER/ORG -r REPO -p PACKAGE_NAME" >&2
             exit 1;;
-        : ) echo "Option -"$OPTARG" requires an argument." >&2
+        : )
+            echo "Error: Invalid syntax" >&2
             echo "Usage: get_last_version.sh -o OWNER/ORG -r REPO -p PACKAGE_NAME" >&2
             exit 1;;
     esac
 done
+
+if [[ -z $PACKAGE_NAME || -z $REPO  || -z $PACKAGE_NAME ]]; then
+  echo "Error: Invalid syntax" >&2
+  echo "Usage: get_last_version.sh -o OWNER/ORG -r REPO -p PACKAGE_NAME" >&2
+  exit 1
+fi
 
 PACKAGE_NAME_PREFIX="${PACKAGE_NAME}-v"
 
@@ -31,7 +45,7 @@ latest_release_name=`curl -s https://api.github.com/repos/${OWNER}/${REPO}/relea
 #no release name containing the version found - return 1.0.0
 if [ ${#latest_release_name} -le 5 ]; then
   echo "0.0.0" ;
-  exit 0;
+  exit 0
 fi
 
 #remove both trailing and leading double quotes
@@ -57,6 +71,6 @@ ext12="-beta"
 
 latest_release_name=$(echo "$latest_release_name" | sed -e "s/^$PACKAGE_NAME_PREFIX//" -e "s/$ext1$//" -e "s/$ext2$//" -e "s/$ext3$//" -e "s/$ext4$//" -e "s/$ext5$//" -e "s/$ext6$//" -e "s/$ext7$//" -e "s/$ext8$//" -e "s/$ext9$//" -e "s/$ext10$//" -e "s/$ext11$//" -e "s/$ext12$//")
 
-echo $latest_release_name
+echo "${latest_release_name}"
 
-exit 0;
+exit 0
