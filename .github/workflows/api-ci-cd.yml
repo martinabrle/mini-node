@@ -36,7 +36,7 @@ jobs:
       - name: Restore all project dependencies
         run: npm install
       
-      - name: Generate a unique package version
+      - name: Figure out the next package version
         id: version
         run: |
           VERSION=""        
@@ -59,6 +59,7 @@ jobs:
           echo "::set-output name=RELEASE_NAME::mini-node-api-v${VERSION}"
           echo "::set-output name=RELEASE_FILE_NAME::mini-node-api-v${VERSION}.zip"
 
+      - name: Display next version |
           echo "Version: ${{ steps.version.outputs.RELEASE_VERSION }}"
           echo "Release name: ${{ steps.version.outputs.RELEASE_NAME }}"
           echo "Release file name: ${{ steps.version.outputs.RELEASE_FILE_NAME }}"
