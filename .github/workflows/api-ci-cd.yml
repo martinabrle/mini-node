@@ -59,6 +59,10 @@ jobs:
           echo "::set-output name=RELEASE_NAME::mini-node-api-v${VERSION}"
           echo "::set-output name=RELEASE_FILE_NAME::mini-node-api-v${VERSION}.zip"
 
+          echo "Version: ${{ steps.version.outputs.RELEASE_VERSION }}"
+          echo "Release name: ${{ steps.version.outputs.RELEASE_NAME }}"
+          echo "Release file name: ${{ steps.version.outputs.RELEASE_FILE_NAME }}"
+
       - name: Build and validate
         run: npm run build
       
