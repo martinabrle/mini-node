@@ -115,6 +115,8 @@ jobs:
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_UAT_CREDENTIALS }}
+        #see https://docs.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-cli%2Clinux
+        #    az account list-locations -o table
 
       - name: Set default Azure subscription
         run: az account set -s ${{ secrets.AZURE_UAT_SUBSCRIPTION_ID }}
@@ -124,7 +126,7 @@ jobs:
              az deployment sub create \
               --location ${{ secrets.AZURE_UAT_LOCATION }} \
               --template-file ./scripts/deployment-rg.bicep \
-              --parameters name=${{ secrets.AZURE_UAT_RESOURCE_GROUP }}
+              --parameters name=${{ secrets.AZURE_UAT_RESOURCE_GROUP }} location=${{ secrets.AZURE_UAT_LOCATION }}
 
       - name: Deploy Azure resources
         run: |
@@ -141,7 +143,8 @@ jobs:
                     apiServiceName=${{ secrets.AZURE_UAT_API_SERVICE_NAME }} \
                     apiServicePort=${{ secrets.AZURE_UAT_API_SERVICE_PORT }} \
                     webServiceName=${{ secrets.AZURE_UAT_WEB_SERVICE_NAME }} \
-                    webServicePort=${{ secrets.AZURE_UAT_WEB_SERVICE_PORT }}
+                    webServicePort=${{ secrets.AZURE_UAT_WEB_SERVICE_PORT }} \
+                    location=${{ secrets.AZURE_UAT_LOCATION }}
       
       - name: Create DB if it does not exist
         run: |
