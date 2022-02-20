@@ -139,20 +139,20 @@ jobs:
                     dbServerLogin=${{ secrets.AZURE_UAT_DB_SERVER_LOGIN }} \
                     dbServerPassword=${{ secrets.AZURE_UAT_DB_SERVER_LOGIN_PASSWORD }} \
                     apiServiceName=${{ secrets.AZURE_UAT_API_SERVICE_NAME }} \
-                    appServicePort=${{ secrets.AZURE_UAT_API_SERVICE_PORT }} \
+                    apiServicePort=${{ secrets.AZURE_UAT_API_SERVICE_PORT }} \
                     webServiceName=${{ secrets.AZURE_UAT_WEB_SERVICE_NAME }} \
                     webServicePort=${{ secrets.AZURE_UAT_WEB_SERVICE_PORT }}
-
+      
       - name: Create DB if it does not exist
         run: |
           export PGPASSWORD=${{ secrets.AZURE_UAT_DB_SERVER_LOGIN_PASSWORD }}
           psql --host=${{ secrets.AZURE_UAT_DB_SERVER_NAME }}.postgres.database.azure.com --port=${{ secrets.AZURE_UAT_DB_SERVER_PORT }} --username=${{ secrets.AZURE_UAT_DB_SERVER_LOGIN }}@${{ secrets.AZURE_UAT_DB_SERVER_NAME }} --no-password --dbname=postgres -tc "SELECT 1 FROM pg_database WHERE datname = '${{ secrets.AZURE_UAT_DB_NAME }}'" | grep -q 1 || psql --host=${{ secrets.AZURE_UAT_DB_SERVER_NAME }}.postgres.database.azure.com --port=${{ secrets.AZURE_UAT_DB_SERVER_PORT }} --username=${{ secrets.AZURE_UAT_DB_SERVER_LOGIN }}@${{ secrets.AZURE_UAT_DB_SERVER_NAME }} --no-password  --dbname=postgres -c "CREATE DATABASE ${{ secrets.AZURE_UAT_DB_NAME }};"
-        
+      
       - name: Run DB scripts
         run: |
           export PGPASSWORD=${{ secrets.AZURE_UAT_DB_SERVER_LOGIN_PASSWORD }}
           psql --host=${{ secrets.AZURE_UAT_DB_SERVER_NAME }}.postgres.database.azure.com --port=${{ secrets.AZURE_UAT_DB_SERVER_PORT }} --username=${{ secrets.AZURE_UAT_DB_SERVER_LOGIN }}@${{ secrets.AZURE_UAT_DB_SERVER_NAME }} --no-password --dbname=${{ secrets.AZURE_UAT_DB_NAME }} --file=./scripts/db.sql
-          
+      
       - name: Deploy to AppService
         uses: azure/webapps-deploy@v2
         with:
