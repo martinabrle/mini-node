@@ -18,10 +18,7 @@ jobs:
       RELEASE_VERSION: ${{ steps.version.outputs.RELEASE_VERSION }}
       RELEASE_NAME: ${{ steps.version.outputs.RELEASE_NAME }}
       RELEASE_FILE_NAME: ${{ steps.version.outputs.RELEASE_FILE_NAME }}
-    env:
-      RELEASE_VERSION: "0.0.0"
-      RELEASE_NAME: "mini-node-api.zip"
-      RELEASE_FILE_NAME: "mini-node-api"
+    
     steps:
       - uses: actions/checkout@v2
         
@@ -54,7 +51,7 @@ jobs:
           elif [ "$RETVAL_VER_COMP" == -1 ]; then
               VERSION="$VERSION_NODE"
           else
-              echo "error"
+              echo "Error: unexpected value returned by version_compare.sh"
               exit 1
           fi
 
