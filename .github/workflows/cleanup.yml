@@ -1,0 +1,26 @@
+name: cleanup
+
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '14 30 20 * * ? *'
+  workflow_dispatch:
+
+  jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Azure login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_UAT_CREDENTIALS }}
+        #see https://docs.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-cli%2Clinux
+        #    az account list-locations -o table
+
+      - name: Set default Azure subscription
+        run: az account set -s ${{ secrets.AZURE_UAT_SUBSCRIPTION_ID }}
+
+      - name: Remove deployed UAT artefacts
+        run: az group delete --resource-group ${{ secrets.AZURE_UAT_RESOURCE_GROUP }} --subscription ${{ secrets.AZURE_UAT_SUBSCRIPTION_ID }} --yes
+      
