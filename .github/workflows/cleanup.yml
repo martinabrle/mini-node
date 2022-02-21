@@ -30,10 +30,13 @@ jobs:
         run: |
           RG_EXISTS=$(az group exists --name ${{ secrets.AZURE_UAT_RESOURCE_GROUP }} --subscription ${{ secrets.AZURE_UAT_SUBSCRIPTION_ID }})
           if [[ -z $RG_EXISTS ]]; then
+            echo "RG does NOT exist"
             echo '::set-output name=RG_EXISTS::false'
           elif [[ $RG_EXISTS == "true" ]]; then
+            echo "RG does exist"
             echo '::set-output name=RG_EXISTS::true'
           else
+            echo "RG does NOT exist"
             echo '::set-output name=RG_EXISTS::false'
           fi
 
