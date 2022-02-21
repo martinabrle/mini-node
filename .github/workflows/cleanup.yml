@@ -1,15 +1,11 @@
 name: cleanup
 
 on:
-  #schedule:
-  #  - cron: '14 30 20 * * ? *'
-  #push:
-  #  branches:
-  #    - main
-  #  paths:
-  #    - 'api/**'  
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron:  '31 20 * * *'    
   workflow_dispatch:
-    
+
 jobs:
   cleanup:
     runs-on: ubuntu-latest
@@ -41,7 +37,7 @@ jobs:
           fi
 
       - name: Remove deployed resource group (if exists)
-        if: steps.rg_exists.RG_EXISTS == 'true'
+        if: ${{ steps.rg_exists.outputs.RG_EXISTS }} == "true"
         run: |
           az group delete --resource-group ${{ secrets.AZURE_UAT_RESOURCE_GROUP }} --subscription ${{ secrets.AZURE_UAT_SUBSCRIPTION_ID }} --yes
       

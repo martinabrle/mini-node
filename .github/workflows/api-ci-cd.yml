@@ -6,9 +6,6 @@ on:
   #    - main
   #  paths:
   #    - 'api/**'  
-  schedule:
-    # * is a special character in YAML so you have to quote this string
-    - cron:  '31 20 * * *'
   workflow_dispatch:
     
 jobs:
