@@ -158,10 +158,14 @@ jobs:
         run: |
           export PGPASSWORD=${{ secrets.AZURE_UAT_DB_SERVER_LOGIN_PASSWORD }}
           psql --host=${{ secrets.AZURE_UAT_DB_SERVER_NAME }}.postgres.database.azure.com --port=${{ secrets.AZURE_UAT_DB_SERVER_PORT }} --username=${{ secrets.AZURE_UAT_DB_SERVER_LOGIN }}@${{ secrets.AZURE_UAT_DB_SERVER_NAME }} --no-password --dbname=${{ secrets.AZURE_UAT_DB_NAME }} --file=./scripts/db.sql
+
+      - name: Sleep 30 sec to avoid deployment timeouts
+        run: |
+          sleep 30s
       
       - name: Deploy to AppService
         uses: azure/webapps-deploy@v2
-        with:
+        with: 
           app-name: "${{ secrets.AZURE_UAT_API_SERVICE_NAME }}"
           package: "${{ needs.build.outputs.RELEASE_FILE_NAME }}"
       
