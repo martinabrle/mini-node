@@ -39,5 +39,7 @@ jobs:
       - name: Remove deployed resource group (if exists)
         if: ${{ steps.rg_exists.outputs.RG_EXISTS }} == "true"
         run: |
+          echo "${{ steps.rg_exists.outputs.RG_EXISTS }}"
+          echo "${{ steps.rg_exists.RG_EXISTS }}"
           az group delete --resource-group ${{ secrets.AZURE_UAT_RESOURCE_GROUP }} --subscription ${{ secrets.AZURE_UAT_SUBSCRIPTION_ID }} --yes
       
