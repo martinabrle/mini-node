@@ -54,11 +54,14 @@ jobs:
               echo "Error: unexpected value returned by version_compare.sh"
               exit 1
           fi
+          echo "Repo: ${VERSION_REPO}"
+          echo "Package: ${VERSION_NODE}"
+          echo "New: ${VERSION}"
 
           echo "::set-output name=RELEASE_VERSION::${VERSION}"
           echo "::set-output name=RELEASE_NAME::mini-node-api-v${VERSION}"
           echo "::set-output name=RELEASE_FILE_NAME::mini-node-api-v${VERSION}.zip"
-
+      
       - name: Display next version
         run: |
           echo "Version: ${{ steps.version.outputs.RELEASE_VERSION }}"
