@@ -159,7 +159,7 @@ jobs:
       - name: Deploy to AppService
         uses: azure/webapps-deploy@v2
         with:
-          app-name: "${{ secrets.AZURE_UAT_APP_SERVICE_NAME }}"
+          app-name: "${{ secrets.AZURE_UAT_API_SERVICE_NAME }}"
           package: "${{ needs.build.outputs.RELEASE_FILE_NAME }}"
       
       - name: Run integration test(s)
