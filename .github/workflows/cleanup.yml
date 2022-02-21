@@ -1,8 +1,8 @@
 name: cleanup
 
 on:
-  schedule:
-    - cron: '14 30 20 * * ? *'
+  #schedule:
+  #  - cron: '14 30 20 * * ? *'
   #push:
   #  branches:
   #    - main
