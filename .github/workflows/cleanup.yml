@@ -1,11 +1,13 @@
 name: cleanup
 
 on:
-  schedule:
-    # * is a special character in YAML so you have to quote this string
-    - cron:  '14 30 20 * * ? *'
+  #push:
+  #  branches:
+  #    - main
+  #  paths:
+  #    - 'api/**'  
   workflow_dispatch:
-
+    
 jobs:
   cleanup:
     runs-on: ubuntu-latest
