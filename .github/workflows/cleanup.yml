@@ -6,7 +6,7 @@ on:
     - cron:  '14 30 20 * * ? *'
   workflow_dispatch:
 
-  jobs:
+jobs:
   cleanup:
     runs-on: ubuntu-latest
     
