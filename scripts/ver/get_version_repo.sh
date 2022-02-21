@@ -53,9 +53,6 @@ latest_release_name="${latest_release_name%\"}"
 latest_release_name="${latest_release_name#\"}"
 
 #Remove both prefix and suffix from the package name to extract the version number
-
-latest_release_name="mini-node-api-v1.0.0-beta-pre-release"
-
 ext1=".zip"
 ext2=".tar.gz"
 ext3=".gzip"
