@@ -24,7 +24,21 @@ jobs:
 
       - name: Set default Azure subscription
         run: az account set -s ${{ secrets.AZURE_UAT_SUBSCRIPTION_ID }}
+      
+      - name: Check the resource group exists
+        id: rg_exists
+        run: |
+          RG_EXISTS=$(az group exists --name ${{ secrets.AZURE_UAT_RESOURCE_GROUP }} --subscription ${{ secrets.AZURE_UAT_SUBSCRIPTION_ID }})
+          if [[ -z $RG_EXISTS ]]; then
+            echo '::set-output name=RG_EXISTS::false'
+          elif [[ $RG_EXISTS == "true" ]]; then
+            echo '::set-output name=RG_EXISTS::true'
+          else
+            echo '::set-output name=RG_EXISTS::false'
+          fi
 
-      - name: Remove deployed UAT artefacts
-        run: az group delete --resource-group ${{ secrets.AZURE_UAT_RESOURCE_GROUP }} --subscription ${{ secrets.AZURE_UAT_SUBSCRIPTION_ID }} --yes
+      - name: Remove deployed resource group (if exists)
+        if: steps.rg_exists.RG_EXISTS == 'true'
+        run: |
+          az group delete --resource-group ${{ secrets.AZURE_UAT_RESOURCE_GROUP }} --subscription ${{ secrets.AZURE_UAT_SUBSCRIPTION_ID }} --yes
       
